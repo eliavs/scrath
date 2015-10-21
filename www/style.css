@@ -1,0 +1,61 @@
+
+header {
+    float: left;
+    clear: both;
+    text-align: center;
+    font-size: 55px;
+    height: 160px;
+    width: 100%;
+    background-color: gray;
+}
+
+    header .headtitle {
+        width: 400px;
+        margin: 50px auto;
+        color:white;
+    }
+
+aside.sidebar {
+    float: right;
+    width: 250px;
+    height: 550px;
+    background-color: #f0f0f0;
+	margin: 1% 2%;
+    border: 1px solid #010101;
+	overflow:overlay;  
+}
+
+
+
+    aside.sidebar .container-fluid {
+height:600px;
+        float: right;
+        width: 90%;
+        margin: 1% 2%;
+        border: 1px solid #010101;
+        border-radius:5px;
+    }
+
+aside.sidebar  .info {
+
+    margin:1% 2.5%;
+}
+
+    aside.sidebar  .multiple {
+        margin: 2px 5px;
+        height:20px;
+        width:150px;
+    }
+    aside.sidebar .box input {
+        margin-right: 25px;
+        margin-bottom: 5px;
+    }
+body .Main_content{
+	float:right;
+	width:800px;
+}
+ 
+  .Main_content .nav li{
+	float: right;
+	text-align: right;
+}

@@ -1,0 +1,102 @@
+﻿
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <script src="shared/jquery.js" type="text/javascript"></script>
+    <script src="shared/shiny.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <meta charset="UTF-8">
+    <title>מנהל סטודנטים</title>
+</head>
+<body>
+    <header>
+        <div class="headtitle">
+            מנהל סטודנטים
+        </div>
+    </header>
+
+    <div class="main">
+
+
+        <aside class="sidebar">
+
+            <div class="box">
+                <h2 class="title">פתיחה</h2>
+                <div class="info">
+                    אפליקציה המאפשרת ניתוח נתוני מועמדים לאוניברסיטה
+                </div>
+            </div>
+
+            <div class="box">
+                <h2 class="title">אופן השימוש</h2>
+                <div class="info">
+                    יש למלא את הנתונים ואחר כך ללחוץ :"טעינת נתונים"
+                </div>
+                <button type="button">טעינת נתונים</button>
+            </div>
+
+            <div class="box">
+                <h2 class="title">הגדרת החיתוכים</h2>
+                <div class="item">מצב החלטה</div>
+                <div id="roomsdropdown" class="shiny-html-output"></div>
+				<select class="multiple" name="cars" multiple>
+                    <option value="volvo">התקבל</option>
+                    <option value="saab">נדחה</option>
+                </select>
+
+			  <p>
+				<label>Number of observations:</label><br /> 
+				<input type= "js-range-slider" name="n"  data-min="1" data-max="1000" />
+			  </p>
+
+                
+               
+           
+                <div class="item">סוג הנכס</div>
+                <select class="multiple" name="cars" multiple>
+                    <option value="volvo">דירה</option>
+                    <option value="saab">פנטהאוס</option>
+                    <option value="opel">דירת גג</option>
+                    <option value="audi">דירת גן</option>
+                    <option value="audi">לופט</option>
+                    <option value="audi">קוטג'</option>
+                    <option value="audi">דופלקס</option>
+                    <option value="audi">בית פרטי</option>
+                </select>
+
+            </div>   <!--Basic info Input -->
+
+            <div class="box">
+                <h2 class="title">מדדים</h2>
+                <div class="info">GEOHIB <br />Mega Geek</div>
+            </div>   <!--Who are we? -->
+
+            <div class="box">
+                <h2 class="title">Version</h2>
+                <div class="info">prototype</div>
+            </div>  <!--Version -->
+
+
+        </aside>
+
+
+        <div class="left">
+            <div id="map" class="shiny-plot-output" >
+
+               
+            </div>
+
+            <div class="info">
+                INFO
+            </div>
+
+
+
+        </div>
+
+
+    </div>
+
+
+</body>
+</html>
