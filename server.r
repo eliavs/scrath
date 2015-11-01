@@ -17,7 +17,7 @@ userdata <- reactive({
   file<-read.csv("file.txt", header=T, stringsAsFactors =F)
   #View(names(file))
   #a$X.186[!is.na(a$X.187)]
-  #View(file)
+  #View(file
   b<-data.frame(matrix(NA, ncol = 38))  
   names(b)<-names(file[1:38])
   for (i in 25:95){
@@ -36,11 +36,8 @@ userdata <- reactive({
   new_data$new_date<-strptime(paste(as.character(df[,1]),as.character(df[,2]), as.character(df[,3])),format="%e %m %Y")
   raw_harshama<-new_data[37]
   foo <- unlist(strsplit(unlist(raw_harshama,use.names = F),"/"))
-  print("here2")
   df<-data.frame(x=c(foo[seq(1,length(foo),3)]),y=c(foo[seq(2,length(foo),3)]),z=c(foo[seq(3,length(foo),3)]))
-  print("here3")
   names(new_data)[37]<-"har_date"
-  print(head(new_data[37]))
   new_data$harshama_date<-strptime(paste(as.character(df[,1]),as.character(df[,2]), as.character(df[,3])),format="%e %m %Y")
   
   return(new_data)
@@ -90,6 +87,7 @@ output$SlicingLocation <- renderUI({
   location <- data1$name
   selectInput('chosenLocation','', choices=c(unique(location),"all"),multiple = T,selected="all")  
 })
+
 ########----------
 #date range
 #׳‘׳—׳™׳¨׳× ׳–׳׳
@@ -129,7 +127,6 @@ plotdata<-reactive({
   int1 <- new_interval(ymd(mini),ymd(maxi))
   
   data1 <- data1[ymd(data1$new_date) %within% int1,]
-  
   return(data1)
 })
 
@@ -150,13 +147,15 @@ plotdate<-reactive({
 ##build a leaflet map
 #-------------------
 map<-reactive({
-  data1<-plotdata()
+  data1<-plotdata()  
   map_data<- data1[!is.na(data1$x),]
-  a<-aggregate(map_data[c(21,26,27)], by = list(map_data$name), FUN = mean)
-  pal1 <- colorNumeric(palette = heat.colors(10),  domain = a$'ציון.עברית',10)
-  #print(pal1)
+  a<-aggregate(map_data[c(3,220,221)], by = list(map_data$name), FUN = mean)
+  pal1 <- colorNumeric(palette = heat.colors(10),  domain = a$פסיכומטרי,10)
+  
   map <- leaflet() %>% addTiles()
-  map1 <- map %>% addCircleMarkers(data = a, lat = ~y, lng = ~x, color = ~pal1('ציון.עברית'),radius = 3, popup = a[[1]]) %>% addLegend(position = "bottomleft",pal = pal1, values= a$ציון.עברית	,title = "׳׳§׳¨׳",opacity = 1)
+  
+  map1 <- map %>% addCircleMarkers(data = a, lat = ~y, lng = ~x, color = ~pal1(פסיכומטרי),radius = 3, popup = a[[1]]) %>% addLegend(position = "bottomleft",pal = pal1, values= a$פסיכומטרי	,title = "׳׳§׳¨׳",opacity = 1)
+  
   return(map1)
 })
 
