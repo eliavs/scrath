@@ -13,8 +13,12 @@ shinyServer(function(input, output,session) {
 userdata <- reactive({
   Sys.setlocale(category = "LC_ALL", locale = "hebrew")
   foon <- "data/2016.txt"
-  shell(paste("sed 's/\t/,/g'", foon," | tail -n +2 > file.txt"))
-  file<-read.csv("file.txt", header=T, stringsAsFactors =F)
+  if(.Platform$OS.type == "unix") {
+    system(paste("sed 's/\t/,/g'", foon," | tail -n +2 > file.txt"))  
+  } else {
+    shell(paste("sed 's/\t/,/g'", foon," | tail -n +2 > file.txt"))  
+  }
+  file<-read.csv("file.txt", header=T, stringsAsFactors =F, fileEncoding = "UTF-8" )
   #View(names(file))
   #a$X.186[!is.na(a$X.187)]
   #View(file
@@ -47,6 +51,12 @@ output$downloadbutton <- renderUI({
   downloadButton('downloadPlot', 'לשמירה')
   
 })
+output$Slicingfile <- renderUI({
+  l = dir("data")
+  filelist = as.integer(substr(l, 1,4))
+  selectInput('chosenfile','', choices=c(filelist),selected =max(filelist),multiple = T)
+})
+
 ########----------
 #situation dropdown
 #׳‘׳—׳™׳¨׳×
@@ -73,7 +83,7 @@ output$SlicingReason <- renderUI({
 output$SlicingMajor <- renderUI({
   
   data1<-userdata()
-  Major <- data1[20]
+  Major <- data1[26]
   choices1<-c(unique(Major),'all')
   selectInput('chosenMajor','', choices=choices1,selected = "all",multiple = T)
   
@@ -117,7 +127,7 @@ plotdata<-reactive({
     data1<-data1[data1[[33]]==c(Reason),]
   }
   if (Major!="all"){
-    data1<-data1[data1[[25]]==c(Major),]
+    data1<-data1[data1[[26]]==c(Major),]
   }
   if (Location!="all"){
     data1<-data1[data1[['name']]==c(Location),]
