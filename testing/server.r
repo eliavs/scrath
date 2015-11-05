@@ -1,13 +1,12 @@
-library(leaflet)
-server <- (function(input, output) {
-	 
-		map <- reactive({
-		your.map <- leaflet() %>% addTiles()
-		 map <- your.map
-		 return(map)
-		 })
-		 output$myMap <- renderLeaflet({
-		 map<-map()
-		 if(interactive()) print(map)
-		 })
-		 })
+ 
+ shinyServer(function(input, output,session) {
+   
+   output$SlicingReason <- renderUI({
+     l = dir("data")
+     filelist = as.integer(substr(l, 1,4))
+     selectInput('chosenfile','', choices=c(filelist),selected =max(filelist),multiple = T)
+   
+ })
+ 
+ 
+ })
