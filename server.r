@@ -163,20 +163,28 @@ plotdata<-reactive({
   datafile <- datafile[ymd(datafile$new_date) %within% int1,]
   datas[[length(datas)+1]] <- datafile
   }
-  return(data1)
+  return(datas)
 })
 
 ##----------------
 ##build a time plot
 #------------------------
 plotdate<-reactive({
-  foo<-plotdata()
-  
+  data1<-plotdata()
+  #foo = data1[[1]]
+  i = 1
+  for (foo in data1){
+  if (i<=1){
   df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c("תאריך החלטה", "תאריך הרשמה")))
   a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")
-  leafmap <-ggplot(data = foo) + stat_ecdf(data = foo , aes(new_date),color = "green") + stat_ecdf(data = foo, aes(harshama_date),color = "red")+ labs(title = "׳×׳׳¨׳™׳›׳™ ׳”׳¨׳©׳׳”", x= " ׳×׳׳¨׳™׳", y= "׳›׳׳•׳×")
-  
-  
+  }
+  else{
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c("תאריך 1 החלטה", "תאריך 1 הרשמה")))
+  a<- a + stat_ecdf(data = df , aes(x , color = g))
+  }
+  #leafmap <-ggplot(data = foo) + stat_ecdf(data = foo , aes(new_date),color = "green") + stat_ecdf(data = foo, aes(harshama_date),color = "red")+ labs(title = "׳×׳׳¨׳™׳›׳™ ׳”׳¨׳©׳׳”", x= " ׳×׳׳¨׳™׳", y= "׳›׳׳•׳×")
+  i= i+1
+  }
   return(a)
 })
 
@@ -184,7 +192,7 @@ plotdate<-reactive({
 ##build a leaflet map
 #-------------------
 map<-reactive({
-  data1<-plotdata()  
+  data1<-plotdata()[[1]]  
   map_data<- data1[!is.na(data1$x),]
   a<-aggregate(map_data[c(3,220,221)], by = list(map_data$name), FUN = mean)
   pal1 <- colorNumeric(palette = heat.colors(10),  domain = a$פסיכומטרי,10)
@@ -210,7 +218,7 @@ output$viewData<-renderPlot({
 
 output$downloadPlot <- downloadHandler(
   filename = function() {
-    paste('saved-', Sys.time(), '.png', sep='')
+    paste(input$chosenfile, input$chosenSituation,Sys.time(), '.png', sep='')
   },
   content = function(file) {
     png(file)

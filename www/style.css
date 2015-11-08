@@ -4,24 +4,27 @@ header {
     clear: both;
     text-align: center;
     font-size: 55px;
-    height: 160px;
+    height: 100px;
     width: 100%;
-    background-color: gray;
 }
 
     header .headtitle {
         width: 400px;
-        margin: 50px auto;
-        color:white;
+        margin: 20px auto;
+        color:#000;
     }
-
+h2.title{
+	margin-top:20px;
+	width:50%;
+	 margin-right:100px;
+}
 aside.sidebar {
     float: right;
-    width: 250px;
+    width: calc(100% - 800px);
     height: 550px;
-    background-color: #f0f0f0;
-	margin: 1% 2%;
-    border: 1px solid #010101;
+     overflow-x: auto;
+     direction:ltr;
+     
 	overflow:overlay;  
 }
 
@@ -30,17 +33,21 @@ aside.sidebar {
     aside.sidebar .container-fluid {
 height:600px;
         float: right;
-        width: 90%;
-        margin: 1% 2%;
-        border: 1px solid #010101;
+        width: 80%;
+        
+       direction:rtl;
         border-radius:5px;
     }
 
 aside.sidebar  .info {
-
+ box-shadow:none;
     margin:1% 2.5%;
 }
-
+aside.sidebar  .info .row-fluid{
+width:40%;
+float:right;
+margin-right:15px
+}
     aside.sidebar  .multiple {
         margin: 2px 5px;
         height:20px;
