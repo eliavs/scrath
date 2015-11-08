@@ -187,7 +187,19 @@ plotdate<-reactive({
   }
   return(a)
 })
-
+##-----------------
+### build a histogram
+#####----------
+his<-reactive({
+ data1<-plotdata()
+ i = 1
+  for (foo in data1){
+  if (i<=1){
+  a<- hist(as.numeric(foo[,3]))
+  }
+  }
+  return(a)
+})
 ##----------------
 ##build a leaflet map
 #-------------------
@@ -203,10 +215,12 @@ map<-reactive({
   
   return(map1)
 })
-
+###plot hist
+output$histo<-renderPlot({
+his()
+})
 ##plot_leaflet map
 output$myMap<-renderLeaflet({
-  print("here")
   map()
 })
 
