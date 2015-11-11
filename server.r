@@ -60,12 +60,12 @@ userdata <- reactive({
   foo <-as.integer(foo)
   df<-data.frame(x=c(foo[seq(1,length(foo),3)]),y=c(foo[seq(2,length(foo),3)]),z=c(foo[seq(3,length(foo),3)]))
   names(new_data)[36]<-"dec_date"
-  new_data$new_date<-strptime(paste(as.character(df[,1]),as.character(df[,2]), as.character(df[,3])),format="%e %m %Y")
+  new_data$new_date<-strptime(paste(as.character(df[,1]),as.character(df[,2])),format="%e %m")
   raw_harshama<-new_data[37]
   foo <- unlist(strsplit(unlist(raw_harshama,use.names = F),"/"))
   df<-data.frame(x=c(foo[seq(1,length(foo),3)]),y=c(foo[seq(2,length(foo),3)]),z=c(foo[seq(3,length(foo),3)]))
   names(new_data)[37]<-"har_date"
-  new_data$harshama_date<-strptime(paste(as.character(df[,1]),as.character(df[,2]), as.character(df[,3])),format="%e %m %Y")
+  new_data$harshama_date<-strptime(paste(as.character(df[,1]),as.character(df[,2])),format="%e %m")
   assign(paste("new_data_",file,sep =""), new_data)
   
   list_of_data[[file]]<-get(paste("new_data_",file,sep =""))
@@ -73,13 +73,16 @@ userdata <- reactive({
   }
   return(list_of_data) 
 })
-
+####download image button
 output$downloadbutton <- renderUI({
   downloadButton('downloadPlot', 'לשמירה')
   
 })
-
-
+#######download data
+output$downloaddatabutton <- renderUI({
+  downloadButton('downloadDat', 'לשמירת נתונים')
+  
+})
 ########----------
 #situation dropdown
 #
@@ -172,14 +175,15 @@ plotdata<-reactive({
 plotdate<-reactive({
   data1<-plotdata()
   #foo = data1[[1]]
+  print(str(input$chosenfile))
   i = 1
   for (foo in data1){
   if (i<=1){
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c("תאריך החלטה", "תאריך הרשמה")))
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[1]), paste("תאריך הרשמה ",input$chosenfile[1]))))
   a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")
   }
   else{
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c("תאריך 1 החלטה", "תאריך 1 הרשמה")))
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך 1 החלטה",input$chosenfile[i]),paste("תאריך 1 הרשמה", input$chosenfile[i]))))
   a<- a + stat_ecdf(data = df , aes(x , color = g))
   }
   #leafmap <-ggplot(data = foo) + stat_ecdf(data = foo , aes(new_date),color = "green") + stat_ecdf(data = foo, aes(harshama_date),color = "red")+ labs(title = "׳×׳׳¨׳™׳›׳™ ׳”׳¨׳©׳׳”", x= " ׳×׳׳¨׳™׳", y= "׳›׳׳•׳×")
@@ -195,7 +199,7 @@ his<-reactive({
  i = 1
   for (foo in data1){
   if (i<=1){
-  a<- hist(as.numeric(foo[,3]))
+  a<- qplot(as.numeric(foo[,3]), geom="histogram", xlab= "ציון")
   }
   }
   return(a)
@@ -235,13 +239,22 @@ output$downloadPlot <- downloadHandler(
     paste(input$chosenfile, input$chosenSituation,Sys.time(), '.png', sep='')
   },
   content = function(file) {
-    png(file)
+    png(file,width     = 700,
+  height    = 400,
+  units     = "px",)
     print(plotdate())
     dev.off()
   }
   
 )
 
+output$downloadData <- downloadHandler(
+    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.csv', sep='') },
+    content = function(file) {
+      write.csv(plotdata(), file)
+    }
+  )
+  
 
 
 
