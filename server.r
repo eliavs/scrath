@@ -138,7 +138,17 @@ output$TimeSlicer <-renderUI({
   dateRangeInput("Time",'',start = min, end = max, min = min, max = max, format = "dd-mm", startview = "month", weekstart = 0, language = "he", separator = " עד ")
 }) 
 
+output$dataradio<-renderUI({radioButtons("madad", "מדדים",
+             c( "פסיכומטרי" = "psychometric",
+               "בגרות" = "bagrut",
+               "אנגלית" = "english",
+			   "עברית" = "hebrew"))
+			   })
 
+
+output$downloadhistbutton <- renderUI({
+  downloadButton('downloadhist', 'לשמירת נתונים')
+})  
 ##----------------
 ##build a graph first tab
 #------------------------
@@ -196,10 +206,25 @@ plotdate<-reactive({
 #####----------
 his<-reactive({
  data1<-plotdata()
+ print(input$madad)
+ if (input$madad %in% "psychometric"){
+ j= 3
+ title = "פסיכומטרי"
+ }
+ else if (input$madad == "bagrut"){
+ j = 10
+ title = "בגרות"
+ }
+ else if (input$madad == "english"){
+ j= 17
+ title ="אנגלית"}
+ else if (input$madad == "hebrew"){
+ j= 18
+ title ="עברית"}
  i = 1
   for (foo in data1){
   if (i<=1){
-  a<- qplot(as.numeric(foo[,3]), geom="histogram", xlab= "ציון")
+  a<- qplot(as.numeric(foo[,j]), geom="histogram", xlab= "ציון" ,main = title)
   }
   }
   return(a)
@@ -254,8 +279,17 @@ output$downloadData <- downloadHandler(
       write.csv(plotdata(), file)
     }
   )
-  
 
+output$downloadhist <- downloadHandler(
+    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.png', sep='') },
+    content = function(file) {
+        png(file,width     = 700,
+  height    = 400,
+  units     = "px",)
+    print(his())
+    dev.off()
+  }
+  )  
 
 
 })
