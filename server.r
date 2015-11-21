@@ -36,7 +36,7 @@ userdata <- reactive({
 	foon <- paste("data/",files[file],".txt",sep="")
 	
 	if(.Platform$OS.type == "unix") {
-    system(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file.txt"))  
+    system(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file, ".txt"))  
 	}
    else {
     shell(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file,".txt", sep=""))  
@@ -235,12 +235,27 @@ his<-reactive({
 map<-reactive({
   data1<-plotdata()[[1]]  
   map_data<- data1[!is.na(data1$x),]
-  a<-aggregate(map_data[c(3,220,221)], by = list(map_data$name), FUN = mean)
-  pal1 <- colorNumeric(palette = heat.colors(10),  domain = a$פסיכומטרי,10)
-  
+ if (input$madad %in% "psychometric"){
+ j= 3
+ title = "פסיכומטרי"
+ }
+ else if (input$madad == "bagrut"){
+ j = 10
+ title = "בגרות"
+ }
+ else if (input$madad == "english"){
+ j= 17
+ title ="אנגלית"}
+ else if (input$madad == "hebrew"){
+ j= 18
+ title ="עברית"}
+ name1 <-paste(names(map_data[j]),collapse=' ' )
+  a<-aggregate(map_data[c(j,220,221)], by = list(map_data$name), FUN = mean)
+  names(a)[2]<-"dat"
+  pal1 <- colorNumeric(palette = heat.colors(10),  domain = a$dat,10)
+  print(names(a))
   map <- leaflet() %>% addTiles()
-  
-  map1 <- map %>% addCircleMarkers(data = a, lat = ~y, lng = ~x, color = ~pal1(פסיכומטרי),radius = 3, popup = a[[1]]) %>% addLegend(position = "bottomleft",pal = pal1, values= a$פסיכומטרי	,title = "׳׳§׳¨׳",opacity = 1)
+  map1 <- map %>% addCircleMarkers(data = a, lat = ~y, lng = ~x, color = ~pal1(dat) ,radius = 3, popup = a[[1]])%>% addLegend(position = "bottomleft",pal = pal1, values= a$dat	,title = name1,opacity = 1)
   
   return(map1)
 })
