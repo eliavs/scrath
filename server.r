@@ -7,18 +7,16 @@ library(leaflet)
 library(reshape2)
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
 shinyServer(function(input, output,session) {
-
+### upload file
 output$FileUpload <- renderUI({
 fileInput('fileChoice_progress', 'העלאת קובץ', accept=c("text/csv","text/comma-separated-values","text/plain,.csv"))
 })
-
+##save uploaded file locally
 filedata <- observe({
     infile <- input$fileChoice_progress
 	print(infile$datapath)
 	file.copy(from = infile$datapath, to = paste("data/",infile$name))
 	})
-
-
 
 ####-------------------######
 ##check the data folder for the dat files ##
@@ -95,7 +93,7 @@ output$downloadbutton <- renderUI({
 })
 #######download data
 output$downloaddatabutton <- renderUI({
-  downloadButton('downloadDat', 'לשמירת נתונים')
+  downloadButton('downloadData', 'לשמירת נתונים')
   
 })
 ########----------
@@ -304,11 +302,10 @@ output$downloadPlot <- downloadHandler(
   }
   
 )
-
 output$downloadData <- downloadHandler(
     filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.csv', sep='') },
     content = function(file) {
-      write.csv(plotdata(), file)
+      write.csv(plotdata()[1], file)
     }
   )
 
