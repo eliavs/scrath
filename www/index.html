@@ -22,14 +22,22 @@
 	<script src="shared/bootstrap/js/bootstrap.min.js"></script>
 	<script src="shared/bootstrap/shim/html5shiv.min.js"></script>
 	<script src="shared/bootstrap/shim/respond.min.js"></script>
-	<title>מנהל סטודנטים</title>
+	<title>יחידה לרישום ולמיון מועמדים</title>
 </head>
 <body>
 	<header>
 	<div class="headtitle">
-            מנהל סטודנטים
+            יחידה לרישום ולמיון מועמדים
 	</div>
+		
     </header>
+	<div class="form-group shiny-input-container">
+                  <label>העלאת קובץ</label>
+                  <input id="fileChoice_progress" name="fileChoice_progress" type="file" accept="text/csv,text/comma-separated-values,text/plain,.csv" class="shiny-bound-input">
+	  <div id="file1_progress" class="progress progress-striped active shiny-file-input-progress">
+                    <div class="progress-bar"></div>
+	  </div>
+	</div>
 	<h2 class="title">אופן השימוש</h2>
 	<aside class="sidebar">
 	
@@ -43,7 +51,6 @@
 						<i class="fa fa-refresh"></i>
 						טעינת הנתונים
 					</button>
-				</div> 
 				<!--בחירת מצב ההחלטה-->
 				<h2 class="title">חיתוכים</h2>
 				<div class="row-fluid">
@@ -86,25 +93,25 @@
 						<div class="radio">
 						  <label>
 							<input type="radio" name="madad" value="psychometric"/>
-							<span>פסיכומטרי</span>
+							<span class="madadLabel">פסיכומטרי</span>
 						  </label>
 						</div>
 						<div class="radio">
 						  <label>
 							<input type="radio" name="madad" value="bagrut"/>
-							<span>בגרות</span>
+							<span class="madadLabel">בגרות</span>
 						  </label>
 						</div>
 						<div class="radio">
 						  <label>
 							<input type="radio" name="madad" value="english"/>
-							<span>אנגלית</span>
+							<span class="madadLabel">אנגלית</span>
 						  </label>
 						</div>
 						<div class="radio">
 						  <label>
 							<input type="radio" name="madad" value="hebrew"/>
-							<span>עברית</span>
+							<span class="madadLabel">עברית</span>
 						  </label>
 						</div>
 					  </div>

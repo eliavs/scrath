@@ -7,12 +7,27 @@ library(leaflet)
 library(reshape2)
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
 shinyServer(function(input, output,session) {
+
+output$FileUpload <- renderUI({
+fileInput('fileChoice_progress', 'העלאת קובץ', accept=c("text/csv","text/comma-separated-values","text/plain,.csv"))
+})
+
+filedata <- observe({
+    infile <- input$fileChoice_progress
+	print(infile$datapath)
+	file.copy(from = infile$datapath, to = paste("data/",infile$name))
+	})
+
+
+
 ####-------------------######
 ##check the data folder for the dat files ##
 ##and output the years###
 ##---------------###########
+
 output$Slicingfile <- renderUI({
   l = dir("data")
+  
   filelist = as.integer(substr(l, 1,4))
   selectInput('chosenfile','', choices=c(filelist),selected =max(filelist),multiple = T)
 })
@@ -91,7 +106,7 @@ output$SlicingData <- renderUI({
   data1<-userdata()[[1]]
   situation <- data1[[32]]
   Mode<-max(names(table(situation)))
-  selectInput('chosenSituation','', choices=unique(situation),selected = Mode,multiple = T)
+  selectInput('chosenSituation','', choices=c(unique(situation),"all"),selected = "all",multiple = T)
 })
 ########----------
 #reason dropdown
@@ -160,7 +175,9 @@ plotdata<-reactive({
   Reason <- c(input$chosenReason)
   Major <- c(input$chosenMajor)
   Location <- c(input$chosenLocation)
+  if (Situation!="all"){
   datafile<-datafile[datafile[[32]]==c(Situation),]
+  }
   if (Reason!="all"){
     datafile<-datafile[datafile[[33]]==c(Reason),]
   }
