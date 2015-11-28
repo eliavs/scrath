@@ -6,35 +6,30 @@ library(ggmap)
 library(leaflet)
 library(reshape2)
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
+options(shiny.maxRequestSize=30*1024^2) 
 shinyServer(function(input, output,session) {
-### upload file
-output$FileUpload <- renderUI({
-fileInput('fileChoice_progress', 'העלאת קובץ', accept=c("text/csv","text/comma-separated-values","text/plain,.csv"))
-})
-##save uploaded file locally
-filedata <- observe({
-    infile <- input$fileChoice_progress
-	print(infile$datapath)
-	file.copy(from = infile$datapath, to = paste("data/",infile$name))
-	})
-
+## upload file
+	
+#
 ####-------------------######
 ##check the data folder for the dat files ##
 ##and output the years###
 ##---------------###########
 
 output$Slicingfile <- renderUI({
+ 
   l = dir("data")
   
   filelist = as.integer(substr(l, 1,4))
   selectInput('chosenfile','', choices=c(filelist),selected =max(filelist),multiple = T)
+  
 })
 ####-------------------######
 ##upload the data###########
 ##---------------###########
 userdata <- reactive({
 	list_of_data <-list()
-	
+	print(input$fileChoice$name)
 	if (!is.null(input$chosenfile)){
 	files <- c(input$chosenfile)
 	}
@@ -49,7 +44,7 @@ userdata <- reactive({
 	foon <- paste("data/",files[file],".txt",sep="")
 	
 	if(.Platform$OS.type == "unix") {
-    system(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file, ".txt"))  
+    system(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file, ".txt",sep=""))
 	}
    else {
     shell(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file,".txt", sep=""))  
@@ -200,7 +195,7 @@ plotdata<-reactive({
 plotdate<-reactive({
   data1<-plotdata()
   #foo = data1[[1]]
-  print(str(input$chosenfile))
+  #print(str(input$chosenfile))
   i = 1
   for (foo in data1){
   if (i<=1){
@@ -221,7 +216,7 @@ plotdate<-reactive({
 #####----------
 his<-reactive({
  data1<-plotdata()
- print(input$madad)
+ #print(input$madad)
  if (input$madad %in% "psychometric"){
  j= 3
  title = "פסיכומטרי"
@@ -268,7 +263,7 @@ map<-reactive({
   a<-aggregate(map_data[c(j,220,221)], by = list(map_data$name), FUN = mean)
   names(a)[2]<-"dat"
   pal1 <- colorNumeric(palette = heat.colors(10),  domain = a$dat,10)
-  print(names(a))
+  #print(names(a))
   map <- leaflet() %>% addTiles()
   map1 <- map %>% addCircleMarkers(data = a, lat = ~y, lng = ~x, color = ~pal1(dat) ,radius = 3, popup = a[[1]])%>% addLegend(position = "bottomleft",pal = pal1, values= a$dat	,title = name1,opacity = 1)
   
@@ -319,6 +314,22 @@ output$downloadhist <- downloadHandler(
     dev.off()
   }
   )  
+    output$uploadfile<-renderUI({
+	fileInput('file1', 'Choose CSV File',
+                accept=c('text/csv', 
+								 'text/comma-separated-values,text/plain', 
+								 '.csv'))
+							})	 
+ output$contents <- renderTable({
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    print(inFile$datapath)
+	file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""))
+	all_content = readLines(inFile$datapath, encoding="UTF-8")
+	skip_second = all_content[-1]
+    read.csv(textConnection(skip_second), header = TRUE, stringsAsFactors = FALSE, fileEncoding = "UTF-8")
+  })
 
 
 })
