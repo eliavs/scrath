@@ -69,3 +69,14 @@ body .Main_content{
 #madad .madadLabel{
 	margin-right:15px;
 }
+#runo {
+    float: left;
+    display: inline;
+
+}
+
+#histo {
+  float:right;
+    display: inline;
+    left: 0;
+}

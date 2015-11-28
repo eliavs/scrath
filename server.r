@@ -155,7 +155,11 @@ output$dataradio<-renderUI({radioButtons("madad", "מדדים",
 
 
 output$downloadhistbutton <- renderUI({
-  downloadButton('downloadhist', 'לשמירת נתונים')
+  downloadButton('downloadhist', 'לשמירת היסטוגרמה')
+})  
+
+output$downloadrunbutton <- renderUI({
+  downloadButton('downloadrun', ' לשמירת ממוצע רץ')
 })  
 ##----------------
 ##build a graph first tab
@@ -239,6 +243,40 @@ his<-reactive({
   }
   return(a)
 })
+##-----------------
+##build a running average
+##---------------
+runing<-reactive({
+ data1<-plotdata()
+ #print(input$madad)
+ if (input$madad %in% "psychometric"){
+ j= 3
+ title = "פסיכומטרי"
+ }
+ else if (input$madad == "bagrut"){
+ j = 10
+ title = "בגרות"
+ }
+ else if (input$madad == "english"){
+ j= 17
+ title ="אנגלית"}
+ else if (input$madad == "hebrew"){
+ j= 18
+ title ="עברית"}
+ i = 1
+  for (foo in data1){
+  if (i<=1){
+  bar<- tapply(foo[,j], foo$dec_date, mean)
+ b<-data.frame(names(bar), bar)
+ names(b)<-c("nam","bar")
+ print(str(b))
+ a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col="blue") +labs(title = title) + labs(x="תאריך", y= "ממוצע")+scale_x_discrete(breaks = levels(foo$new_date)[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
+}
+}
+return(a)
+})
+
+
 ##----------------
 ##build a leaflet map
 #-------------------
@@ -272,6 +310,10 @@ map<-reactive({
 ###plot hist
 output$histo<-renderPlot({
 his()
+})
+###plot running
+output$runo<-renderPlot({
+runing()
 })
 ##plot_leaflet map
 output$myMap<-renderLeaflet({
@@ -313,7 +355,18 @@ output$downloadhist <- downloadHandler(
     print(his())
     dev.off()
   }
-  )  
+  ) 
+output$downloadrun <- downloadHandler(
+    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.png', sep='') },
+    content = function(file) {
+        png(file,width     = 700,
+  height    = 400,
+  units     = "px",)
+    print(runing())
+    dev.off()
+  }
+  )
+  
     output$uploadfile<-renderUI({
 	fileInput('file1', 'Choose CSV File',
                 accept=c('text/csv', 
