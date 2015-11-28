@@ -381,7 +381,7 @@ output$downloadrun <- downloadHandler(
 	file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""))
 	all_content = readLines(inFile$datapath, encoding="UTF-8")
 	skip_second = all_content[-1]
-    read.csv(textConnection(skip_second), header = TRUE, stringsAsFactors = FALSE, fileEncoding = "UTF-8")
+    read.delim(textConnection(skip_second), header = TRUE,sep="\t", stringsAsFactors = FALSE,fileEncoding = "UTF-8")
   })
 
 
