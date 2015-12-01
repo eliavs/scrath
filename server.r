@@ -50,7 +50,7 @@ userdata <- reactive({
     shell(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file,".txt", sep=""))  
   }
   
-  file_1 <- read.csv(paste("file",file,".txt",sep = ""), header=T, stringsAsFactors =F, fileEncoding = "UTF-8" )
+  file_1 <- read.csv(paste("file",file,".txt",sep = ""), header=T, stringsAsFactors =F )
   
   
   b<-data.frame(matrix(NA, ncol = 38))  
@@ -165,6 +165,7 @@ output$downloadrunbutton <- renderUI({
 ##build a graph first tab
 #------------------------
 plotdata<-reactive({
+
   datas<-list()
   data1<-userdata() 
   for (datafile in data1){
@@ -197,6 +198,8 @@ plotdata<-reactive({
 ##build a time plot
 #------------------------
 plotdate<-reactive({
+  if (is.null(input$chosenSituation))
+	return(" ")
   data1<-plotdata()
   #foo = data1[[1]]
   #print(str(input$chosenfile))
@@ -219,6 +222,8 @@ plotdate<-reactive({
 ### build a histogram
 #####----------
 his<-reactive({
+if (is.null(input$chosenSituation))
+	return(" ")
  data1<-plotdata()
  #print(input$madad)
  if (input$madad %in% "psychometric"){
@@ -247,6 +252,8 @@ his<-reactive({
 ##build a running average
 ##---------------
 runing<-reactive({
+if (is.null(input$chosenSituation))
+	return(" ")
  data1<-plotdata()
  #print(input$madad)
  if (input$madad %in% "psychometric"){
@@ -274,6 +281,7 @@ runing<-reactive({
 }
 }
 return(a)
+
 })
 
 
@@ -309,7 +317,10 @@ map<-reactive({
 })
 ###plot hist
 output$histo<-renderPlot({
+if(is.null(his()))
+print("is null")
 his()
+
 })
 ###plot running
 output$runo<-renderPlot({
@@ -342,7 +353,7 @@ output$downloadPlot <- downloadHandler(
 output$downloadData <- downloadHandler(
     filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.csv', sep='') },
     content = function(file) {
-      write.csv(plotdata()[1], file)
+      write.csv(plotdata()[1], file, fileEncoding= "MS-HEBR")
     }
   )
 
@@ -373,16 +384,39 @@ output$downloadrun <- downloadHandler(
 								 'text/comma-separated-values,text/plain', 
 								 '.csv'))
 							})	 
- output$contents <- renderTable({
+ output$contents <- renderDataTable({
     inFile <- input$file1
-    if (is.null(inFile))
+    print(dir("data"))
+	if (is.null(inFile))
       return(NULL)
-    print(inFile$datapath)
-	file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""))
-	all_content = readLines(inFile$datapath, encoding="UTF-8")
+	print(inFile$datapath)
+	file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""), overwrite = TRUE)
+	all_content = readLines(inFile$datapath)
 	skip_second = all_content[-1]
     read.delim(textConnection(skip_second), header = TRUE,sep="\t", stringsAsFactors = FALSE,fileEncoding = "UTF-8")
   })
-
-
+  
+output$files2del <- renderUI({
+  lst<-dir("data")
+  selectInput('chosen4del',"", choices=c(lst),multiple = T)
+}) 
+output$debuton<-renderUI({
+actionButton("delit", "מחק")
 })
+
+a<-reactive({
+
+return(input$chosen4del)
+})
+
+output$nText<-renderText({
+if (is.null(a()))
+ return(" ") 
+ else{
+ file.remove(paste("data/",input$chosen4del,sep=""))
+ paste(a(), "נמחק")
+ 
+ }
+})
+  })
+  
