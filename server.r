@@ -390,7 +390,13 @@ output$downloadrun <- downloadHandler(
 	if (is.null(inFile))
       return(NULL)
 	print(inFile$datapath)
-	file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""), overwrite = TRUE)
+	#file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""), overwrite = TRUE)
+	if(.Platform$OS.type == "unix") {
+    system(paste("iconv -f ISO-8859-9 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
+	}
+	 else {
+	 shell(paste("iconv -f ISO-8859-9 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
+	 }
 	all_content = readLines(inFile$datapath)
 	skip_second = all_content[-1]
     read.delim(textConnection(skip_second), header = TRUE,sep="\t", stringsAsFactors = FALSE,fileEncoding = "UTF-8")
@@ -419,4 +425,4 @@ if (is.null(a()))
  }
 })
   })
-  
+  ###############################################################################################################################
