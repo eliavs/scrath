@@ -22,6 +22,10 @@
 	<script src="shared/bootstrap/js/bootstrap.min.js"></script>
 	<script src="shared/bootstrap/shim/html5shiv.min.js"></script>
 	<script src="shared/bootstrap/shim/respond.min.js"></script>
+	<link href="shared/ionrangeslider/css/ion.rangeSlider.css" rel="stylesheet" />
+	<link href="shared/ionrangeslider/css/ion.rangeSlider.skinShiny.css" rel="stylesheet" />
+	<script src="shared/ionrangeslider/js/ion.rangeSlider.min.js"></script>
+	<script src="shared/strftime/strftime-min.js"></script>
 	
 	<title>יחידה לרישום ולמיון מועמדים</title>
 </head>
@@ -89,7 +93,7 @@
 					  <div class="shiny-options-group">
 						<div class="radio">
 						  <label>
-							<input type="radio" name="madad" value="psychometric"/>
+							<input type="radio" name="madad" value="psychometric" checked="checked"/>
 							<span class="madadLabel">פסיכומטרי</span>
 						  </label>
 						</div>
@@ -146,11 +150,17 @@
 					<div id="histo" class="shiny-plot-output" style="width: 49% ; height: 400px"></div>
 					
 					<div id="runo" class="shiny-plot-output" style="width: 49% ; height: 400px"></div>
-						
+					
 			</div>
+			<div class="form-group shiny-input-container">
+            <label class="control-label" for="slider">slider:</label>
+            <input class="js-range-slider" id="slider" data-type="double" data-min="0" data-max="1000" data-from="200" data-to="800" data-step="1" data-grid="true" data-grid-num="9.99" data-grid-snap="false" data-prettify-separator="," data-keyboard="true" data-keyboard-step="0.1001001001001" data-drag-interval="true" data-data-type="number"/>
+          </div>
 			<div id="downloadhistbutton" class="shiny-html-output"></div>
 			<br>
 			<div id="downloadrunbutton" class="shiny-html-output"></div>
+			<br>
+			
 			</div>
 			
 			<div class="tab-pane"  data-value="Maps" id="tab-5303-3">

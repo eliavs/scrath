@@ -1,5 +1,4 @@
-options(java.parameters = "- Xmx1024m")
-library(XLConnect)
+library(scales)
 library(htmlwidgets)
 library(lubridate) #to play with dates
 library(ggplot2)
@@ -105,7 +104,7 @@ output$SlicingData <- renderUI({
 })
 ########----------
 #reason dropdown
-#׳¡׳™׳‘׳”
+#
 ##----------
 output$SlicingReason <- renderUI({
   data1<-userdata()[[1]]
@@ -114,7 +113,7 @@ output$SlicingReason <- renderUI({
 })
 ########----------
 #major dropdown
-#׳‘׳—׳™׳¨׳× ׳—׳•׳’
+#
 ##----------
 output$SlicingMajor <- renderUI({
   
@@ -127,7 +126,8 @@ output$SlicingMajor <- renderUI({
 
 ######--------
 #Hug  dropdown
-##------
+####
+#------
 output$SlicingHug <- renderUI({
   if (is.null(input$chosenMajor))
   {
@@ -142,7 +142,7 @@ output$SlicingHug <- renderUI({
 
 ########----------
 #places dropdown
-#׳‘׳—׳™׳¨׳× ׳׳™׳§׳•׳
+##
 ##----------
 output$SlicingLocation <- renderUI({
   data1<-userdata()[[1]]
@@ -152,7 +152,7 @@ output$SlicingLocation <- renderUI({
 
 ########----------
 #date range
-#׳‘׳—׳™׳¨׳× ׳–׳׳
+#
 ##----------
 
 output$TimeSlicer <-renderUI({
@@ -163,12 +163,14 @@ output$TimeSlicer <-renderUI({
   max = max(range(date_dec,na.rm=TRUE))
   dateRangeInput("Time",'',start = min, end = max, min = min, max = max, format = "dd-mm", startview = "month", weekstart = 0, language = "he", separator = " עד ")
 }) 
-
+##########------
+###build output for dataradio madadim
+############--------
 output$dataradio<-renderUI({radioButtons("madad", "מדדים",
              c( "פסיכומטרי" = "psychometric",
                "בגרות" = "bagrut",
                "אנגלית" = "english",
-			   "עברית" = "hebrew"))
+			   "עברית" = "hebrew"), selected = "psychometric" )
 			   })
 
 
@@ -180,7 +182,7 @@ output$downloadrunbutton <- renderUI({
   downloadButton('downloadrun', ' לשמירת ממוצע רץ')
 })  
 ##----------------
-##build a graph first tab
+##cut data
 #------------------------
 plotdata<-reactive({
 
@@ -225,17 +227,25 @@ plotdate<-reactive({
   for (foo in data1){
   if (i<=1){
   df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[1]), paste("תאריך הרשמה ",input$chosenfile[1]))))
-  a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")
+  #a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא") 
+  df$x<-as.Date(df$x)
+ a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
   }
   else{
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך 1 החלטה",input$chosenfile[i]),paste("תאריך 1 הרשמה", input$chosenfile[i]))))
-  a<- a + stat_ecdf(data = df , aes(x , color = g))
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה",input$chosenfile[i]),paste("תאריך הרשמה", input$chosenfile[i]))))
+  df$x <- as.Date(df$x)
+  a <- a + stat_ecdf(data = df , aes(x , color = g))
   }
   #leafmap <-ggplot(data = foo) + stat_ecdf(data = foo , aes(new_date),color = "green") + stat_ecdf(data = foo, aes(harshama_date),color = "red")+ labs(title = "׳×׳׳¨׳™׳›׳™ ׳”׳¨׳©׳׳”", x= " ׳×׳׳¨׳™׳", y= "׳›׳׳•׳×")
   i= i+1
   }
   return(a)
 })
+output$slider <- renderUI({
+sliderInput("slider", "slider:",
+                min = 0, max = 800, value = c(200,500))
+				})
+
 ##-----------------
 ### build a histogram
 #####----------
@@ -261,11 +271,12 @@ if (is.null(input$chosenSituation))
  i = 1
   for (foo in data1){
   if (i<=1){
-  a<- qplot(as.numeric(foo[,j]),fill="#43140190", geom="histogram", xlab= "ציון" ,main = title)
+  a<- qplot(as.numeric(foo[,j]),fill="#43140190", geom="histogram", xlab= "ציון" ,main = title) + scale_x_continuous(breaks=pretty_breaks(n=10), limits=c(input$slider[1],input$slider[2])) + theme(legend.position="none")
   }
   }
   return(a)
 })
+
 ##-----------------
 ##build a running average
 ##---------------
@@ -292,10 +303,17 @@ if (is.null(input$chosenSituation))
   for (foo in data1){
   if (i<=1){
   bar<- tapply(foo[,j], foo$dec_date, mean)
+  
+  print(summary(bar))
  b<-data.frame(names(bar), bar)
  names(b)<-c("nam","bar")
+ print(b$nam)
+ b$nam<-as.POSIXct(b$nam, format="%m/%d/%Y")
+ print(b$nam)
+ summary(b$nam)
  print(str(b))
- a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col="blue") +labs(title = title) + labs(x="תאריך", y= "ממוצע")+scale_x_discrete(breaks = levels(foo$new_date)[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
+ b$nam<-as.Date(b$nam)
+ a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= "ממוצע")+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
 }
 }
 return(a)
@@ -369,24 +387,10 @@ output$downloadPlot <- downloadHandler(
   
 )
 output$downloadData <- downloadHandler(
-	filename=function(){paste(input$chosenfile, input$chosenSituation,Sys.time(),sep="") },
-	 content = function(file){
-      fname <- paste(file,"xlsx",sep=".")
-      wb <- loadWorkbook(fname, create = TRUE)
-      createSheet(wb, name = "Sheet1")
-      writeWorksheet(wb, plotdata()[1], sheet = "Sheet1") # writes numbers 1:3 in file
-      saveWorkbook(wb)
-      file.rename(fname,file)
-    }
-	#filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.xls', sep='') },
-    #content = function(file) {
-	#nam <- paste("שנה",input$chosenfile,"מצב", input$chosenSituation,"פקולטה",input$chosenMajor)
-	#wb=loadWorkbook(filename = "file.xlsx",create =T)
-	#createSheet(object = wb,name = "one")
-	#writeWorksheet(object = wb,data = plotdata()[1],sheet = "one")
-	#saveWorkbook(wb)
-      #write.table(plotdata()[1], file, fileEncoding= "UTF-8")
-    #}
+    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.txt', sep='') },
+    content = function(file) {
+      write.csv(plotdata()[1], file, quote = F, fileEncoding= "UTF-8")
+	  }
   )
 
 output$downloadhist <- downloadHandler(
@@ -424,7 +428,7 @@ output$downloadrun <- downloadHandler(
 	print(inFile$datapath)
 	#file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""), overwrite = TRUE)
 	if(.Platform$OS.type == "unix") {
-    system(paste("iconv -f ISO-8859-9 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
+    system(paste("iconv -f WINDOWS-1255 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
 	}
 	 else {
 	 file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""))
