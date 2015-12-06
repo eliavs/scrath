@@ -1,3 +1,5 @@
+options(java.parameters = "- Xmx1024m")
+library(XLConnect)
 library(htmlwidgets)
 library(lubridate) #to play with dates
 library(ggplot2)
@@ -50,7 +52,7 @@ userdata <- reactive({
     shell(paste("sed 's/\t/,/g' ", foon," | tail -n +2 > file",file,".txt", sep=""))  
   }
   
-  file_1 <- read.csv(paste("file",file,".txt",sep = ""), header=T, stringsAsFactors =F )
+  file_1 <- read.csv(paste("file",file,".txt",sep = ""), header=T, stringsAsFactors =F)
   
   
   b<-data.frame(matrix(NA, ncol = 38))  
@@ -122,6 +124,22 @@ output$SlicingMajor <- renderUI({
   selectInput('chosenMajor','', choices=choices1,selected = "all",multiple = T)
   
 })
+
+######--------
+#Hug  dropdown
+##------
+output$SlicingHug <- renderUI({
+  if (is.null(input$chosenMajor))
+  {
+  choices1<-""
+  }
+  else{
+  data1<-plotdata()[[1]]
+  Hug <- data1[30]
+  choices1<-c(unique(Hug),'all')}
+  selectInput('chosenHug','', choices=choices1,selected = "all",multiple = T)
+})
+
 ########----------
 #places dropdown
 #׳‘׳—׳™׳¨׳× ׳׳™׳§׳•׳
@@ -243,7 +261,7 @@ if (is.null(input$chosenSituation))
  i = 1
   for (foo in data1){
   if (i<=1){
-  a<- qplot(as.numeric(foo[,j]), geom="histogram", xlab= "ציון" ,main = title)
+  a<- qplot(as.numeric(foo[,j]),fill="#43140190", geom="histogram", xlab= "ציון" ,main = title)
   }
   }
   return(a)
@@ -333,7 +351,7 @@ output$myMap<-renderLeaflet({
 
 ##plot the data
 output$viewData<-renderPlot({
-  #input$submit
+
   plotdate()
 },height = 400, width = 700)
 
@@ -351,10 +369,24 @@ output$downloadPlot <- downloadHandler(
   
 )
 output$downloadData <- downloadHandler(
-    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.csv', sep='') },
-    content = function(file) {
-      write.csv(plotdata()[1], file, fileEncoding= "MS-HEBR")
+	filename=function(){paste(input$chosenfile, input$chosenSituation,Sys.time(),sep="") },
+	 content = function(file){
+      fname <- paste(file,"xlsx",sep=".")
+      wb <- loadWorkbook(fname, create = TRUE)
+      createSheet(wb, name = "Sheet1")
+      writeWorksheet(wb, plotdata()[1], sheet = "Sheet1") # writes numbers 1:3 in file
+      saveWorkbook(wb)
+      file.rename(fname,file)
     }
+	#filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.xls', sep='') },
+    #content = function(file) {
+	#nam <- paste("שנה",input$chosenfile,"מצב", input$chosenSituation,"פקולטה",input$chosenMajor)
+	#wb=loadWorkbook(filename = "file.xlsx",create =T)
+	#createSheet(object = wb,name = "one")
+	#writeWorksheet(object = wb,data = plotdata()[1],sheet = "one")
+	#saveWorkbook(wb)
+      #write.table(plotdata()[1], file, fileEncoding= "UTF-8")
+    #}
   )
 
 output$downloadhist <- downloadHandler(
@@ -395,7 +427,8 @@ output$downloadrun <- downloadHandler(
     system(paste("iconv -f ISO-8859-9 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
 	}
 	 else {
-	 shell(paste("iconv -f ISO-8859-9 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
+	 file.copy(from = inFile$datapath, to = paste("data/",inFile$name,sep=""))
+	 #shell(paste("iconv -f ISO-8859-9 -t UTF-8 ", inFile$datapath,"> data/",inFile$name,sep="" ))
 	 }
 	all_content = readLines(inFile$datapath)
 	skip_second = all_content[-1]
