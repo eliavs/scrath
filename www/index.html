@@ -140,6 +140,23 @@
 		<div class="tab-content">
 			<div class="tab-pane active" data-value="basic" id="tab-5303-1">
 				<div class="span8">
+					<div id="andor" class="form-group shiny-input-radiogroup shiny-input-container">
+					  <label class="control-label" for="andor">תצוגה</label>
+					  <div class="shiny-options-group">
+						<div class="radio">
+						  <label>
+							<input type="radio" name="andor" value="and" checked="checked"/>
+							<span class="andorLabel">AND</span>
+						  </label>
+						</div>
+						<div class="radio">
+						  <label>
+							<input type="radio" name="andor" value="or"/>
+							<span class="andorLabel">OR</span>
+						  </label>
+						</div>
+					</div>
+					</div>
 					<div id="viewData" class="shiny-plot-output" style="width: 80% ; height: 400px"></div>
 					<div id="downloadbutton" class="shiny-html-output"></div>
 					<div id="downloaddatabutton" class="shiny-html-output" ></div>
@@ -152,10 +169,11 @@
 					<div id="runo" class="shiny-plot-output" style="width: 49% ; height: 400px"></div>
 					
 			</div>
-			<div class="form-group shiny-input-container">
+			<!--<div class="form-group shiny-input-container">
             <label class="control-label" for="slider">slider:</label>
             <input class="js-range-slider" id="slider" data-type="double" data-min="0" data-max="1000" data-from="200" data-to="800" data-step="1" data-grid="true" data-grid-num="9.99" data-grid-snap="false" data-prettify-separator="," data-keyboard="true" data-keyboard-step="0.1001001001001" data-drag-interval="true" data-data-type="number"/>
-          </div>
+          </div>-->
+		  <div id="slider1" class="shiny-html-output"></div>
 			<div id="downloadhistbutton" class="shiny-html-output"></div>
 			<br>
 			<div id="downloadrunbutton" class="shiny-html-output"></div>

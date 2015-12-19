@@ -80,3 +80,6 @@ body .Main_content{
     display: inline;
     left: 0;
 }
+#andor .andorLabel{
+	margin-right:15px;
+}

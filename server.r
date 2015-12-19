@@ -100,7 +100,7 @@ output$SlicingData <- renderUI({
   data1<-userdata()[[1]]
   situation <- data1[[32]]
   Mode<-max(names(table(situation)))
-  selectInput('chosenSituation','', choices=c(unique(situation),"all"),selected = "all",multiple = T)
+  selectInput('chosenSituation','', choices=c(unique(situation),"הכל"),selected = "הכל",multiple = T)
 })
 ########----------
 #reason dropdown
@@ -109,7 +109,7 @@ output$SlicingData <- renderUI({
 output$SlicingReason <- renderUI({
   data1<-userdata()[[1]]
   Reason <- data1[33]
-  selectInput('chosenReason','', choices=c(unique(Reason),"all"),selected ="all",multiple = T)
+  selectInput('chosenReason','', choices=c(unique(Reason),"הכל"),selected ="הכל",multiple = T)
 })
 ########----------
 #major dropdown
@@ -119,8 +119,8 @@ output$SlicingMajor <- renderUI({
   
   data1<-userdata()[[1]]
   Major <- data1[26]
-  choices1<-c(unique(Major),'all')
-  selectInput('chosenMajor','', choices=choices1,selected = "all",multiple = T)
+  choices1<-c(unique(Major),'הכל')
+  selectInput('chosenMajor','', choices=choices1,selected = "הכל",multiple = T)
   
 })
 
@@ -136,8 +136,8 @@ output$SlicingHug <- renderUI({
   else{
   data1<-plotdata()[[1]]
   Hug <- data1[30]
-  choices1<-c(unique(Hug),'all')}
-  selectInput('chosenHug','', choices=choices1,selected = "all",multiple = T)
+  choices1<-c(unique(Hug),'הכל')}
+  selectInput('chosenHug','', choices=choices1,selected = "הכל",multiple = T)
 })
 
 ########----------
@@ -147,7 +147,7 @@ output$SlicingHug <- renderUI({
 output$SlicingLocation <- renderUI({
   data1<-userdata()[[1]]
   location <- data1$name
-  selectInput('chosenLocation','', choices=c(unique(location),"all"),multiple = T,selected="all")  
+  selectInput('chosenLocation','', choices=c(unique(location),"הכל"),multiple = T,selected="הכל")  
 })
 
 ########----------
@@ -185,7 +185,8 @@ output$downloadrunbutton <- renderUI({
 ##cut data
 #------------------------
 plotdata<-reactive({
-
+	if (input$andor=="and")
+	print("it is and")
   datas<-list()
   data1<-userdata() 
   for (datafile in data1){
@@ -193,16 +194,16 @@ plotdata<-reactive({
   Reason <- c(input$chosenReason)
   Major <- c(input$chosenMajor)
   Location <- c(input$chosenLocation)
-  if (Situation!="all"){
+  if (Situation!="הכל"){
   datafile<-datafile[datafile[[32]]==c(Situation),]
   }
-  if (Reason!="all"){
+  if (Reason!="הכל"){
     datafile<-datafile[datafile[[33]]==c(Reason),]
   }
-  if (Major!="all"){
+  if (Major!="הכל"){
     datafile<-datafile[datafile[[26]]==c(Major),]
   }
-  if (Location!="all"){
+  if (Location!="הכל"){
     datafile<-datafile[datafile[['name']]==c(Location),]
   }
   mini <- min(c(input$Time))
@@ -224,26 +225,57 @@ plotdate<-reactive({
   #foo = data1[[1]]
   #print(str(input$chosenfile))
   i = 1
+  a<-ggplot()
   for (foo in data1){
-  if (i<=1){
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[1]), paste("תאריך הרשמה ",input$chosenfile[1]))))
-  #a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא") 
+  #if (i<=1){
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]))))
+  if (input$andor=="or"){
+	for (j in unique(foo[[32]])) {
+		data <- subset(foo,foo[[32]] == j)
+		df <- data.frame(x = c(data$new_date,data$harshama_date),g = gl(2, length(data[,1]),labels =c(paste("תאריך החלטה ",j,input$chosenfile[i] ), paste("תאריך הרשמה ",j,input$chosenfile[i]))))
+		df$x <- as.Date(df$x)
+		a <- a +stat_ecdf(data = df , aes(x,color = g)) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
+		
+}
+}
+ else{
   df$x<-as.Date(df$x)
- a <- ggplot(data = df, aes(x , color = g)) + stat_ecdf() +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
+ a <-a +  stat_ecdf(data = df, aes(x , color = g)) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
   }
-  else{
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה",input$chosenfile[i]),paste("תאריך הרשמה", input$chosenfile[i]))))
-  df$x <- as.Date(df$x)
-  a <- a + stat_ecdf(data = df , aes(x , color = g))
-  }
-  #leafmap <-ggplot(data = foo) + stat_ecdf(data = foo , aes(new_date),color = "green") + stat_ecdf(data = foo, aes(harshama_date),color = "red")+ labs(title = "׳×׳׳¨׳™׳›׳™ ׳”׳¨׳©׳׳”", x= " ׳×׳׳¨׳™׳", y= "׳›׳׳•׳×")
   i= i+1
   }
   return(a)
 })
-output$slider <- renderUI({
-sliderInput("slider", "slider:",
-                min = 0, max = 800, value = c(200,500))
+
+getnums<-reactive({
+data1<-plotdata()
+ if (input$madad %in% "psychometric"){
+ j= 3
+ title = "פסיכומטרי"
+ }
+ else if (input$madad == "bagrut"){
+ j = 10
+ title = "בגרות"
+ }
+ else if (input$madad == "english"){
+ j= 17
+ title ="אנגלית"}
+ else if (input$madad == "hebrew"){
+ j= 18
+ title ="עברית"}
+ for (foo in data1){
+ nums = c(min(foo[,j]), max(foo[,j]))
+ }
+ return(nums)
+})
+output$slider1 <- renderUI({
+
+a<-getnums()[1]
+b<-getnums()[2]
+print(a)
+
+sliderInput("slider1", "slider:",
+                min = a, max = b, value = c(a,b), step = 1)
 				})
 
 ##-----------------
@@ -304,7 +336,6 @@ if (is.null(input$chosenSituation))
   if (i<=1){
   bar<- tapply(foo[,j], foo$dec_date, mean)
   
-  print(summary(bar))
  b<-data.frame(names(bar), bar)
  names(b)<-c("nam","bar")
  print(b$nam)
@@ -387,9 +418,10 @@ output$downloadPlot <- downloadHandler(
   
 )
 output$downloadData <- downloadHandler(
-    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.txt', sep='') },
+    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.csv', sep='') },
     content = function(file) {
-      write.csv(plotdata()[1], file, quote = F, fileEncoding= "UTF-8")
+	print(class(data.frame(plotdata()[1])))
+      write.csv(data.frame(plotdata()[1]), file, quote = F, fileEncoding= "UTF-8")
 	  }
   )
 
@@ -461,5 +493,11 @@ if (is.null(a()))
  
  }
 })
+##AND - OR
+output$allpart<-renderUI({radioButtons("andor", "",
+             c( "AND" = "and",
+               "OR" = "bagrut"
+               ), selected = "and" )
+			   })
   })
   ###############################################################################################################################
