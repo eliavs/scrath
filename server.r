@@ -125,7 +125,7 @@ output$SlicingMajor <- renderUI({
 })
 
 ######--------
-#Hug  dropdown
+#Chug  dropdown
 ####
 #------
 output$SlicingHug <- renderUI({
@@ -157,12 +157,23 @@ output$SlicingLocation <- renderUI({
 
 output$TimeSlicer <-renderUI({
   data1 <- userdata()[[1]]
-  
   date_dec<-data1$new_date
   min = min(range(date_dec,na.rm=TRUE))
   max = max(range(date_dec,na.rm=TRUE))
-  dateRangeInput("Time",'',start = min, end = max, min = min, max = max, format = "dd-mm", startview = "month", weekstart = 0, language = "he", separator = " עד ")
+  dateRangeInput("Time",'',start = min, end = max, min = min, max = max, format = "dd-mm", startview = "week", weekstart = 0, language = "he", separator = " עד ", width = '500px')
 }) 
+output$TimeSlicer1 <-renderUI({
+	selectInput('MonthF','', choices=c(1,2,3,4,5,6,7,8,9,10,11,12),multiple = F,selected=1, width ='50px')  
+	})
+output$day <-renderUI({
+	selectInput('DayF','', choices=c(seq(from=1, to =31, by=1)),multiple = F,selected=1,width ='50px')  
+	})
+output$TimeSlicer2 <-renderUI({
+	selectInput('MonthT','', choices=c(1,2,3,4,5,6,7,8,9,10,11,12),multiple = F,selected=as.numeric(format(Sys.time(), "%m")), width ='50px')  
+	})
+output$day1 <-renderUI({
+	selectInput('DayT','', choices=c(seq(from=1, to =31, by=1)),multiple = F,selected=as.numeric(format(Sys.time(), "%e")),width ='50px')  
+	})		
 ##########------
 ###build output for dataradio madadim
 ############--------
@@ -206,9 +217,20 @@ plotdata<-reactive({
   if (Location!="הכל"){
     datafile<-datafile[datafile[['name']]==c(Location),]
   }
-  mini <- min(c(input$Time))
+  
+  monthfrom <-input$MonthF
+  dayfrom <-input$DayF
+  monthto <-input$MonthT
+  dayto <-input$DayT
+  
+  #mini <- min(c(input$Time))
+  mini2 <-c(paste(monthfrom,dayfrom))
+  maxi2 <-c(paste(monthto,dayto))
+  mini2<- strptime(mini2, format ="%m %d")
   maxi <- max(c(input$Time))
-  int1 <- new_interval(ymd(mini),ymd(maxi))
+  maxi2 <-strptime(maxi2, format ="%m %d")
+  print(ymd(mini2))
+  int1 <- new_interval(ymd(mini2),ymd(maxi2))
   datafile <- datafile[ymd(datafile$new_date) %within% int1,]
   datas[[length(datas)+1]] <- datafile
   }
@@ -225,28 +247,43 @@ plotdate<-reactive({
   #foo = data1[[1]]
   #print(str(input$chosenfile))
   i = 1
+  
+#print("here")
+ # foo[["mikdama"]]<-unlist(foo[["mikdama"]])
+
+#foo[["mikdama"]]<-as.POSIXct(foo[["mikdama"]], format="%Y-%m-%d")
+#print(foo$mikdama)
   a<-ggplot()
   for (foo in data1){
+  foo$mikdama[foo[[21]]=="שילם מקדמה"]<-as.character(foo[[223]])
+  foo$mikdama<-as.POSIXct(foo$mikdama, format="%Y-%m-%d")
   #if (i<=1){
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]))))
+ 
+ 
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),y =foo$mikdama,L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]),paste("שילם מקדמה",input$chosenfile[i]))))
+  
   if (input$andor=="or"){
 	for (j in unique(foo[[32]])) {
 		data <- subset(foo,foo[[32]] == j)
 		df <- data.frame(x = c(data$new_date,data$harshama_date),g = gl(2, length(data[,1]),labels =c(paste("תאריך החלטה ",j,input$chosenfile[i] ), paste("תאריך הרשמה ",j,input$chosenfile[i]))))
 		df$x <- as.Date(df$x)
+#		df$y <- as.Date(df$y)
 		a <- a +stat_ecdf(data = df , aes(x,color = g)) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
 		
 }
 }
  else{
-  df$x<-as.Date(df$x)
- a <-a +  stat_ecdf(data = df, aes(x , color = g)) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
+	df$y<-as.Date(df$y)
+	df$x<-as.Date(df$x)
+	a <-a + stat_ecdf(data = df, aes(x, color = g))+ stat_ecdf(data = df, aes(y , color = "שילמו מקדמה")) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
+  #df$y<-as.Date(df$y) 
+ #a <-a +  stat_ecdf(data = df, aes(y , color = g+1))
   }
   i= i+1
   }
   return(a)
 })
-
+###set range for histogram
 getnums<-reactive({
 data1<-plotdata()
  if (input$madad %in% "psychometric"){
@@ -268,6 +305,7 @@ data1<-plotdata()
  }
  return(nums)
 })
+###slider
 output$slider1 <- renderUI({
 
 a<-getnums()[1]
@@ -303,7 +341,7 @@ if (is.null(input$chosenSituation))
  i = 1
   for (foo in data1){
   if (i<=1){
-  a<- qplot(as.numeric(foo[,j]),fill="#43140190", geom="histogram", xlab= "ציון" ,main = title) + scale_x_continuous(breaks=pretty_breaks(n=10), limits=c(input$slider[1],input$slider[2])) + theme(legend.position="none")
+  a<- qplot(as.numeric(foo[,j]),fill="#43140190", geom="histogram", xlab= "ציון" ,main = title) + scale_x_continuous(breaks=pretty_breaks(n=10), limits=c(input$slider1[1],input$slider1[2])) + theme(legend.position="none")
   }
   }
   return(a)

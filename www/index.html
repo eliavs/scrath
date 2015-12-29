@@ -74,16 +74,27 @@
 					<label class="control-label" for="n">חוג</label>
 					<div id="SlicingHug" class="shiny-html-output"></div>
 				</div>
-				<br>
 				<!--<div class="row-fluid">
 				<label class="control-label" for="n">תאריכים</label>
 				<input class="js-range-slider" id="n" data-min="1" data-max="32" data-from="10" data-step="1" data-grid="true" data-grid-num="7.75" data-grid-snap="false" data-prettify-separator="," data-keyboard="true" data-keyboard-step="3.2258064516129"/>
 				</div>-->
 		 
-					<div class="row-fluid">
-						<label class="control-label" for="n">תאריכים</label>
-						<div class="shiny-html-output" id="TimeSlicer" ></div>
+					<div class="row-fluid" id ="dte">
+						<label class="control-label" for="n">תאריכים</label><br>
+						<label class="control-label" for="n">מ:</label>
+						<label class="control-label" for="n" id = "dai">חודש &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;      יום</label><br>
+						<div  class="shiny-html-output" id="TimeSlicer1"></div>
+						<div class="shiny-html-output" id="day" ></div><br>
+						<div><br><br><br><br>
+						<label class="control-label" for="n" align = "right">עד:</label><br>
+						<label class="control-label" for="n" id = "dai">חודש &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;      יום</label><br>
+						<div class="shiny-html-output" id="TimeSlicer2" ></div>
+						<div class="shiny-html-output" id="day1" ></div><br>
+						</div>
 					</div>
+					
+					
+					
 					<div class="row-fluid">
 						<label class="control-label" for="n">מיקום</label>
 						<div id="SlicingLocation" class="shiny-html-output"></div>

@@ -83,3 +83,27 @@ body .Main_content{
 #andor .andorLabel{
 	margin-right:15px;
 }
+
+#day{
+	float: left;
+	display: block;
+	
+}
+
+#TimeSlicer1{
+	float: right;
+	 white-space: nowrap;
+	
+}
+
+#day1{
+	float: left;
+	display: block;
+	
+}
+
+#TimeSlicer2{
+	float: right;
+	 white-space: nowrap;
+	
+}
