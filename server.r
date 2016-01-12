@@ -6,6 +6,8 @@ library(plyr) #combining the data
 library(ggmap)
 library(leaflet)
 library(reshape2)
+library(XLConnect)
+options(java.parameters = "-Xmx4g")
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
 options(shiny.maxRequestSize=30*1024^2) 
 shinyServer(function(input, output,session) {
@@ -169,10 +171,10 @@ output$day <-renderUI({
 	selectInput('DayF','', choices=c(seq(from=1, to =31, by=1)),multiple = F,selected=1,width ='50px')  
 	})
 output$TimeSlicer2 <-renderUI({
-	selectInput('MonthT','', choices=c(1,2,3,4,5,6,7,8,9,10,11,12),multiple = F,selected=as.numeric(format(Sys.time(), "%m")), width ='50px')  
+	selectInput('MonthT','', choices=c(1,2,3,4,5,6,7,8,9,10,11,12),multiple = F,selected=12, width ='50px')  
 	})
 output$day1 <-renderUI({
-	selectInput('DayT','', choices=c(seq(from=1, to =31, by=1)),multiple = F,selected=as.numeric(format(Sys.time(), "%e")),width ='50px')  
+	selectInput('DayT','', choices=c(seq(from=1, to =31, by=1)),multiple = F,selected=31,width ='50px')  
 	})		
 ##########------
 ###build output for dataradio madadim
@@ -255,12 +257,14 @@ plotdate<-reactive({
 #print(foo$mikdama)
   a<-ggplot()
   for (foo in data1){
+  
   foo$mikdama[foo[[21]]=="שילם מקדמה"]<-as.character(foo[[223]])
+
   foo$mikdama<-as.POSIXct(foo$mikdama, format="%Y-%m-%d")
   #if (i<=1){
  
  
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),y =foo$mikdama,L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]),paste("שילם מקדמה",input$chosenfile[i]))))
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),y =foo$mikdama,L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]),paste("שילמו מקדמה",input$chosenfile[i]))))
   
   if (input$andor=="or"){
 	for (j in unique(foo[[32]])) {
@@ -456,11 +460,16 @@ output$downloadPlot <- downloadHandler(
   
 )
 output$downloadData <- downloadHandler(
-    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.csv', sep='') },
-    content = function(file) {
-	print(class(data.frame(plotdata()[1])))
-      write.csv(data.frame(plotdata()[1]), file, quote = F, fileEncoding= "UTF-8")
-	  }
+    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.xlsx', sep='') },
+    content = function(file){
+      fname <- paste(file,"xlsx",sep=".")
+      wb <- loadWorkbook(fname, create = TRUE)
+      createSheet(wb, name = "Sheet1")
+      writeWorksheet(wb, plotdata()[1], sheet = "Sheet1") # writes numbers 1:3 in file
+      saveWorkbook(wb)
+      file.rename(fname,file)
+    }
+	
   )
 
 output$downloadhist <- downloadHandler(
