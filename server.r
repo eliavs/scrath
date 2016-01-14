@@ -378,14 +378,24 @@ if (is.null(input$chosenSituation))
  i = 1
   for (foo in data1){
   if (i<=1){
-  print(foo$new_date)
-  bar<- tapply(foo[,j][foo[,j]!=0], foo$dec_date[foo[,j]!=0], mean)
-  print(class(foo))
-  print(foo[,j][foo[,j]==0])
+  if (input$analtype == "mean")
+  {
+  #bar<- tapply(foo[,j][foo[,j]!=0], foo$dec_date[foo[,j]!=0], mean)
+  bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), mean)
+  }
+  else if (input$analtype=="max"){
+  bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), max)
+  }
+   else if (input$analtype=="min"){
+  bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), min)
+  }
+  
+  print(str(foo$dec_date))
+  print(str(foo$new_date))
  b<-data.frame(names(bar), bar)
  names(b)<-c("nam","bar")
  #print(b$nam)
- b$nam<-as.POSIXct(b$nam, format="%m/%d/%Y")
+ #b$nam<-as.POSIXct(b$nam, format="%m/%d/%Y")
 # print(b$nam)
 # summary(b$nam)
  #print(str(b))
@@ -446,9 +456,9 @@ output$myMap<-renderLeaflet({
 
 ##plot the data
 output$viewData<-renderPlot({
-
   plotdate()
 },height = 400, width = 700)
+
 
 output$downloadPlot <- downloadHandler(
   filename = function() {
@@ -463,9 +473,8 @@ output$downloadPlot <- downloadHandler(
   }
   
 )
+
 output$downloadData <- downloadHandler(
-	
-	
     filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.xlsx', sep='') },
     content = function(file){
 	datfram<-plotdata()[[1]]
@@ -557,5 +566,15 @@ output$allpart<-renderUI({radioButtons("andor", "",
                "OR" = "bagrut"
                ), selected = "and" )
 			   })
-  })
+  
+
+output$analasystype<-renderUI({radioButtons("analtype", "",
+             c( "ממוצע" = "mean",
+               "מקסימום" = "max",
+			   "מינימום" = "min",
+			   "שכיח" = "mode"
+               ), selected = "mean" )
+			   
+			   })
+			   })
   ###############################################################################################################################

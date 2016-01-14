@@ -107,3 +107,12 @@ body .Main_content{
 	 white-space: nowrap;
 	
 }
+
+
+#analtype .analtypeLabel{
+	margin-right:15px;
+}
+
+#analtype {
+	float:left;
+}
