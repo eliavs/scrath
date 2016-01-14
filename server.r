@@ -6,10 +6,12 @@ library(plyr) #combining the data
 library(ggmap)
 library(leaflet)
 library(reshape2)
-library(XLConnect)
-options(java.parameters = "-Xmx4g")
+library(openxlsx)
+#library(xlsx)
+#library(WriteXLS)
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
 options(shiny.maxRequestSize=30*1024^2) 
+options(java.parameters = "- Xmx1024m")
 shinyServer(function(input, output,session) {
 ## upload file
 	
@@ -376,15 +378,17 @@ if (is.null(input$chosenSituation))
  i = 1
   for (foo in data1){
   if (i<=1){
-  bar<- tapply(foo[,j], foo$dec_date, mean)
-  
+  print(foo$new_date)
+  bar<- tapply(foo[,j][foo[,j]!=0], foo$dec_date[foo[,j]!=0], mean)
+  print(class(foo))
+  print(foo[,j][foo[,j]==0])
  b<-data.frame(names(bar), bar)
  names(b)<-c("nam","bar")
- print(b$nam)
+ #print(b$nam)
  b$nam<-as.POSIXct(b$nam, format="%m/%d/%Y")
- print(b$nam)
- summary(b$nam)
- print(str(b))
+# print(b$nam)
+# summary(b$nam)
+ #print(str(b))
  b$nam<-as.Date(b$nam)
  a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= "ממוצע")+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
 }
@@ -460,16 +464,23 @@ output$downloadPlot <- downloadHandler(
   
 )
 output$downloadData <- downloadHandler(
+	
+	
     filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.xlsx', sep='') },
     content = function(file){
-      fname <- paste(file,"xlsx",sep=".")
-      wb <- loadWorkbook(fname, create = TRUE)
-      createSheet(wb, name = "Sheet1")
-      writeWorksheet(wb, plotdata()[1], sheet = "Sheet1") # writes numbers 1:3 in file
-      saveWorkbook(wb)
-      file.rename(fname,file)
+	datfram<-plotdata()[[1]]
+	print(names(datfram))
+	datfram <-datfram[,c(1:220), drop=F]
+	#print(datfram)
+	#datfram <- replace(plotdata()[[1]] , is.na(plotdata()[[1]] ),"")
+    wb <- createWorkbook()
+	addWorksheet(wb = wb, sheetName = "Sheet 1", gridLines = FALSE)
+	writeDataTable(wb = wb, sheet = 1, x = datfram )
+	#write.xlsx(datfram,"anothertry.xlsx")
+	#WriteXLS(datfram, ExcelFileName = "andanother.xls", SheetNames = NULL, perl = "perl", verbose = T, Encoding = "UTF-8", col.names = TRUE)
+	saveWorkbook(wb, file, overwrite = TRUE)
+	write.csv(datfram, "compare.csv")
     }
-	
   )
 
 output$downloadhist <- downloadHandler(
