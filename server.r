@@ -7,6 +7,7 @@ library(ggmap)
 library(leaflet)
 library(reshape2)
 library(openxlsx)
+library(zoo)
 #library(xlsx)
 #library(WriteXLS)
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
@@ -397,6 +398,7 @@ if (is.null(input$chosenSituation))
   erech= "מינימום"
   }
     else if (input$analtype=="deviation"){
+  #bar <-rollapply(foo[,j][foo[,j]!=0], width = 3, FUN = sd, na.pad = TRUE)
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), sd)
   erech = "סטיית תקן"
   }
@@ -408,7 +410,7 @@ if (is.null(input$chosenSituation))
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), Mode)
   erech = "שכיח"
   }
-  
+  bar<-bar[!is.na(bar)]
   print(str(foo$dec_date))
   print(str(foo$new_date))
  b<-data.frame(names(bar), bar)
@@ -420,6 +422,9 @@ if (is.null(input$chosenSituation))
  #print(str(b))
  b$nam<-as.Date(b$nam)
  a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= erech)+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
+ print(paste(bar," ," ,cumsum(bar)))
+ 
+ #a<-ggplot(b,aes(x = nam, y =bar, group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= erech)+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
 }
 }
 return(a)
