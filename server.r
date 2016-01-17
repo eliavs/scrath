@@ -357,6 +357,10 @@ if (is.null(input$chosenSituation))
 ##build a running average
 ##---------------
 runing<-reactive({
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
 if (is.null(input$chosenSituation))
 	return(" ")
  data1<-plotdata()
@@ -382,12 +386,27 @@ if (is.null(input$chosenSituation))
   {
   #bar<- tapply(foo[,j][foo[,j]!=0], foo$dec_date[foo[,j]!=0], mean)
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), mean)
+  erech = "ממוצע"
   }
   else if (input$analtype=="max"){
+ erech = "מקסימום"
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), max)
   }
    else if (input$analtype=="min"){
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), min)
+  erech= "מינימום"
+  }
+    else if (input$analtype=="deviation"){
+  bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), sd)
+  erech = "סטיית תקן"
+  }
+  else if (input$analtype=="median"){
+  bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), median)
+  erech = "חציון"
+  }
+    else if (input$analtype=="mode"){
+  bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), Mode)
+  erech = "שכיח"
   }
   
   print(str(foo$dec_date))
@@ -400,7 +419,7 @@ if (is.null(input$chosenSituation))
 # summary(b$nam)
  #print(str(b))
  b$nam<-as.Date(b$nam)
- a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= "ממוצע")+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
+ a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= erech)+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
 }
 }
 return(a)
@@ -475,7 +494,7 @@ output$downloadPlot <- downloadHandler(
 )
 
 output$downloadData <- downloadHandler(
-    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.xlsx', sep='') },
+    filename = function() { paste(Sys.time(), '.xlsx', sep='') },
     content = function(file){
 	datfram<-plotdata()[[1]]
 	print(names(datfram))
@@ -484,6 +503,11 @@ output$downloadData <- downloadHandler(
 	#datfram <- replace(plotdata()[[1]] , is.na(plotdata()[[1]] ),"")
     wb <- createWorkbook()
 	addWorksheet(wb = wb, sheetName = "Sheet 1", gridLines = FALSE)
+	is_character_col <- which(sapply(datfram, class) %in% "character")
+	for(i in is_character_col){
+	datfram[[i]] <- gsub("\b", "", datfram[[i]], fixed = TRUE)
+	}
+  
 	writeDataTable(wb = wb, sheet = 1, x = datfram )
 	#write.xlsx(datfram,"anothertry.xlsx")
 	#WriteXLS(datfram, ExcelFileName = "andanother.xls", SheetNames = NULL, perl = "perl", verbose = T, Encoding = "UTF-8", col.names = TRUE)
@@ -572,7 +596,9 @@ output$analasystype<-renderUI({radioButtons("analtype", "",
              c( "ממוצע" = "mean",
                "מקסימום" = "max",
 			   "מינימום" = "min",
-			   "שכיח" = "mode"
+			   "שכיח" = "mode",
+			   "סטיית תקן" = "deviation",
+			   "חציון" = "median"
                ), selected = "mean" )
 			   
 			   })
