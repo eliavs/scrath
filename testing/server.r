@@ -3,7 +3,7 @@ library(leaflet)
 Sys.setlocale(category = "LC_ALL", locale = "hebrew")
 shinyServer(function(input, output,session) {
 map<-reactive({ 
-  map_data<- read.csv("../map-data.csv",quote = "", header=T,encoding ="utf-8",row.names = NULL,  stringsAsFactors =F, sep =",")
+  map_data<- read.csv("../map-data.csv", header=TRUE,quote = "",encoding ="UTF-8",row.names = NULL,  stringsAsFactors =F, sep =",")
 
 map_data[,221] <-as.numeric(map_data[,221])
 map_data[,220] <-as.numeric(map_data[,220])
