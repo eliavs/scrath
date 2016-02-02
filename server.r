@@ -1,3 +1,4 @@
+
 library(scales)
 library(htmlwidgets)
 library(lubridate) #to play with dates
@@ -134,7 +135,7 @@ output$SlicingMajor <- renderUI({
 ####
 #------
 output$SlicingHug <- renderUI({
-  if (is.null(input$chosenMajor))
+  if (is.null(input$chosenMajor)| is.null(input$chosenSituation))
   {
   choices1<-""
   }
@@ -142,6 +143,10 @@ output$SlicingHug <- renderUI({
   data1<-plotdata()[[1]]
   Hug <- data1[30]
   choices1<-c(unique(Hug),'הכל')}
+  validate(
+  need(!is.null(input$chosenMajor),"אנא בחר פקולטה"),
+  need(!is.null(input$chosenSituation),"אנא בחר מצב החלטה")
+  )
   selectInput('chosenHug','', choices=choices1,selected = "הכל",multiple = T)
 })
 
@@ -249,32 +254,21 @@ plotdate<-reactive({
   if (is.null(input$chosenSituation))
 	return(" ")
   data1<-plotdata()
-  #foo = data1[[1]]
-  #print(str(input$chosenfile))
   i = 1
-  
-#print("here")
- # foo[["mikdama"]]<-unlist(foo[["mikdama"]])
-
-#foo[["mikdama"]]<-as.POSIXct(foo[["mikdama"]], format="%Y-%m-%d")
-#print(foo$mikdama)
   a<-ggplot()
   for (foo in data1){
-  
   foo$mikdama[foo[[21]]=="שילם מקדמה"]<-as.character(foo[[223]])
-
+  if (length(foo$mikdama)<=1)
+  return("")
   foo$mikdama<-as.POSIXct(foo$mikdama, format="%Y-%m-%d")
-  #if (i<=1){
- 
- 
-  df <- data.frame(x = c(foo$new_date,foo$harshama_date),y =foo$mikdama,L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]),paste("שילמו מקדמה",input$chosenfile[i]))))
-  
+  df <- data.frame(x = c(foo$new_date,foo$harshama_date),y =foo$mikdama,L =foo[[32]],g = gl(2, length(foo[,1]),labels =c(paste("תאריך החלטה " , input$chosenfile[i]), paste("תאריך הרשמה ",input$chosenfile[i]),paste("שילמו מקדמה",input$chosenfile[i])))) 
   if (input$andor=="or"){
 	for (j in unique(foo[[32]])) {
 		data <- subset(foo,foo[[32]] == j)
 		df <- data.frame(x = c(data$new_date,data$harshama_date),g = gl(2, length(data[,1]),labels =c(paste("תאריך החלטה ",j,input$chosenfile[i] ), paste("תאריך הרשמה ",j,input$chosenfile[i]))))
 		df$x <- as.Date(df$x)
-#		df$y <- as.Date(df$y)
+		if(length(df$x) <=1)
+		return("")
 		a <- a +stat_ecdf(data = df , aes(x,color = g)) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
 		
 }
@@ -282,9 +276,10 @@ plotdate<-reactive({
  else{
 	df$y<-as.Date(df$y)
 	df$x<-as.Date(df$x)
+	if(length(df$x)<=1)
+	return("")
 	a <-a + stat_ecdf(data = df, aes(x, color = g))+ stat_ecdf(data = df, aes(y , color = "שילמו מקדמה")) +labs(title = "תאריכי הרשמה", x= " תאריך", y= "כמות", color = "מקרא")  +  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week") )
-  #df$y<-as.Date(df$y) 
- #a <-a +  stat_ecdf(data = df, aes(y , color = g+1))
+
   }
   i= i+1
   }
@@ -327,6 +322,7 @@ sliderInput("slider1", "slider:",
 ### build a histogram
 #####----------
 his<-reactive({
+print (sessionInfo())
 if (is.null(input$chosenSituation))
 	return(" ")
  data1<-plotdata()
@@ -348,6 +344,11 @@ if (is.null(input$chosenSituation))
  i = 1
   for (foo in data1){
   if (i<=1){
+	if (length(foo[,j])<1){
+	print(foo[,j])
+	print("short")
+	return("")
+	}
   a<- qplot(as.numeric(foo[,j]),fill="#43140190", geom="histogram", xlab= "ציון" ,main = title) + scale_x_continuous(breaks=pretty_breaks(n=10), limits=c(input$slider1[1],input$slider1[2])) + theme(legend.position="none")
   }
   }
@@ -387,14 +388,23 @@ if (is.null(input$chosenSituation))
   {
   #bar<- tapply(foo[,j][foo[,j]!=0], foo$dec_date[foo[,j]!=0], mean)
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), mean)
+  validate(
+  need(!is.null(bar), "אין מספיק נתונים")
+  )
   erech = "ממוצע"
   }
   else if (input$analtype=="max"){
  erech = "מקסימום"
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), max)
+  validate(
+  need(!is.null(bar), "אין מספיק נתונים")
+  )
   }
    else if (input$analtype=="min"){
   bar<- tapply(foo[,j][foo[,j]!=0], as.character(foo$new_date[foo[,j]!=0]), min)
+  validate(
+  need(!is.null(bar), "אין מספיק נתונים")
+  )
   erech= "מינימום"
   }
     else if (input$analtype=="deviation"){
@@ -411,15 +421,16 @@ if (is.null(input$chosenSituation))
   erech = "שכיח"
   }
   bar<-bar[!is.na(bar)]
-  print(str(foo$dec_date))
-  print(str(foo$new_date))
+  validate(need(!is.null(bar), "we got a problam")
+  )
+
  b<-data.frame(names(bar), bar)
+ if (length(b)<=1){
+ return("")}
+ validate(need(b!=0, "we got a problam")
+  )
  names(b)<-c("nam","bar")
- #print(b$nam)
- #b$nam<-as.POSIXct(b$nam, format="%m/%d/%Y")
-# print(b$nam)
-# summary(b$nam)
- #print(str(b))
+
  b$nam<-as.Date(b$nam)
  a<-ggplot(b,aes(x = nam, y =cumsum(bar)/seq_along(bar), group = 1)) + geom_line(col='#4061F0') +labs(title = title) + labs(x="תאריך", y= erech)+  scale_x_date(labels = date_format("%d/%m"),breaks = date_breaks("5 week"))#+ scale_x_discrete(breaks = 20)#scale_x_continuous(foo$new_date)#[c(T, rep(F, 9))])#+ theme(text = element_text(size=5),axis.text.x = element_text(angle=90, vjust=1)) 
  print(paste(bar," ," ,cumsum(bar)))
@@ -464,13 +475,20 @@ map<-reactive({
 })
 ###plot hist
 output$histo<-renderPlot({
+validate(
+need(his()!="", "אין מספיק נתונים")
+)
 if(is.null(his()))
 print("is null")
+
 his()
 
 })
 ###plot running
 output$runo<-renderPlot({
+validate(
+need(runing()!="", "אין מספיק נתונים")
+)
 runing()
 })
 ##plot_leaflet map
@@ -480,6 +498,9 @@ output$myMap<-renderLeaflet({
 
 ##plot the data
 output$viewData<-renderPlot({
+  validate(
+  need(plotdate()!="", "אין מספיק נתונים")
+  )
   plotdate()
 },height = 400, width = 700)
 
@@ -520,9 +541,15 @@ output$downloadData <- downloadHandler(
 	write.csv(datfram, "compare.csv")
     }
   )
-
-output$downloadhist <- downloadHandler(
-    filename = function() { paste(input$chosenfile, input$chosenSituation,Sys.time(), '.png', sep='') },
+name<-reactive({
+a<-iconv(paste(input$chosenfile,input$chosenSituation, '.png', sep="_"),to ="windows-1255")
+print(Encoding(a))
+print(a)
+return(paste(input$chosenfile,input$chosenSituation, '.png', sep="_"))
+})
+output$downloadhist <-
+downloadHandler(	
+    filename = function() { paste(input$chosenfile,input$chosenSituation, '.png', sep="_")},
     content = function(file) {
         png(file,width     = 700,
   height    = 400,
